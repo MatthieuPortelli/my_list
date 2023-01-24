@@ -1,0 +1,5 @@
+<div id="tasks" class="mt-2 d-flex flex-column gap-2">
+    {% for task in tasks %}
+        {% include 'tasks/task.html' with task=task %}
+    {% endfor %}
+</div>

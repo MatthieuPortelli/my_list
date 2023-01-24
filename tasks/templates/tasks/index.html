@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>MaCheckList</title>
+    <!-- Import Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+    <!-- Import HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.8.4"></script>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        body {
+            background-color: lightsteelblue;
+        }
+
+        @media (max-width: 767px) {
+            #logo {
+                height: 32px;
+                width: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mx-auto mt-2 mt-md-5">
+    <header class="d-flex justify-content-md-start justify-content-center align-item-center gap-2 mb-2 mb-md-4">
+        <img src="https://cdn-icons-png.flaticon.com/64/8161/8161879.png" alt="logo-check-list" id="logo">
+        <h1 class="m-0">Ma check-list</h1>
+    </header>
+
+    <div class="row">
+        <div class="col-12 col-md-4">
+            <form method="POST" class="d-flex gap-2">
+                {% csrf_token %}
+
+                <input type="text"
+                       class="form-control"
+                       name="collection-name"
+                       placeholder="Liste...">
+                <button class="btn btn-success"
+                        hx-post="{% url 'add-collection' %}"
+                        hx-target="#collections"
+                        hx-swap="beforeend"
+                        type="submit">
+                    Ajouter une liste
+                </button>
+            </form>
+
+            <div id="collections" class="list-group mt-2" role="tablist">
+                {% for collection in collections %}
+                    {% include 'tasks/collection.html' with collection=collection %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <section class="col-12 col-md-8 mt-4 mt-md-0 mb-2 mb-md-0">
+            <form method="POST" class="d-flex gap-2">
+                {% csrf_token %}
+
+                <input type="text"
+                       name="task-description"
+                       class="form-control"
+                       placeholder="Tâche...">
+                <button class="btn btn-success"
+                        hx-post="{% url 'add-task' %}"
+                        hx-target="#tasks"
+                        hx-vals="js:{collection: getCollectionFromUrl()}"
+                        hx-swap="beforeend"
+                        type="submit">
+                    Ajouter une tâche
+                </button>
+            </form>
+
+            <section id="tasks-container">
+                {% include 'tasks/tasks.html' with tasks=tasks collection=collection %}
+            </section>
+        </section>
+    </div>
+</div>
+
+<script>
+    <!-- Création d'un message d'erreur si je reçois un code erreur (envoyé dans views.py) -->
+    document.body.addEventListener("htmx:responseError", function(evt) {
+        alert(evt.detail.xhr.responseText);
+    })
+
+    <!-- -->
+    function getCollectionFromUrl() {
+        let url = new URL(window.location.href);
+        let searchParams = url.searchParams;
+        return searchParams.get("collection");
+    }
+</script>
+<!-- Import Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+</body>
+</html>
